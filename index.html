@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hockey Game Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 10px;
+            font-size: 2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .period-display {
+            text-align: center;
+            color: #1e3c72;
+            font-size: 1em;
+            font-weight: bold;
+            background: rgba(30, 60, 114, 0.1);
+            padding: 8px 20px;
+            border-radius: 8px;
+            white-space: nowrap;
+            border: 2px solid rgba(30, 60, 114, 0.2);
+        }
+        
+        .game-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .team-names {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+        
+        .team-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #1e3c72;
+            text-align: center;
+        }
+        
+        .team-name.home {
+            color: #2a5298;
+        }
+        
+        .team-name.away {
+            color: #c62828;
+        }
+        
+        .team-name {
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+        
+        .team-name:active {
+            transform: scale(0.95);
+        }
+        
+        .color-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .color-modal.active {
+            display: flex;
+        }
+        
+        .color-picker-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .color-picker-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .color-option {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            cursor: pointer;
+            border: 4px solid transparent;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .color-option[style*="#ffffff"] {
+            border: 4px solid #ddd;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+            border-color: #333;
+        }
+        
+        .color-option:active {
+            transform: scale(0.95);
+        }
+        
+        .close-modal {
+            width: 100%;
+            padding: 12px;
+            background: #666;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .close-modal:hover {
+            background: #555;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        
+        .stat-label {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #555;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        .stat-value.home {
+            color: #2a5298;
+        }
+        
+        .stat-value.away {
+            color: #c62828;
+        }
+        
+        
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        button {
+            padding: 15px 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            min-width: 80px;
+        }
+        
+        button:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-home {
+            background: #2a5298;
+            color: white;
+        }
+        
+        .btn-home:hover {
+            background: #1e3c72;
+        }
+        
+        .btn-away {
+            background: #c62828;
+            color: white;
+        }
+        
+        .btn-away:hover {
+            background: #a02020;
+        }
+        
+        .controls {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn-control {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            background: #ff9800;
+            color: white;
+        }
+        
+        .btn-control:hover {
+            background: #e68900;
+        }
+        
+        .btn-reset {
+            background: #9e9e9e;
+        }
+        
+        .btn-reset:hover {
+            background: #757575;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            
+            .score {
+                font-size: 3.5em;
+            }
+            
+            .team-name {
+                font-size: 1.2em;
+            }
+            
+            button {
+                padding: 12px 15px;
+                font-size: 1em;
+                min-width: 60px;
+            }
+            
+            .stat-label {
+                font-size: 1em;
+            }
+            
+            .stat-value {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏒 Hockey Tracker 🏒</h1>
+        
+        <div class="game-container">
+            <div class="team-names">
+                <div class="team-name home">Home Team</div>
+                <div class="period-display">Period: <span id="period">1</span></div>
+                <div class="team-name away">Away Team</div>
+            </div>
+            
+            <!-- Goals -->
+            <div class="stat-row">
+                <div class="button-group">
+                    <button class="btn-home" onclick="changeStat('home', 'score', 1)">+ GOAL</button>
+                    <button class="btn-home" onclick="changeStat('home', 'score', -1)">−</button>
+                </div>
+                <div class="stat-label">
+                    ⭐ GOALS ⭐<br>
+                    <span class="stat-value home" id="homeScore">0</span> - 
+                    <span class="stat-value away" id="awayScore">0</span>
+                </div>
+                <div class="button-group">
+                    <button class="btn-away" onclick="changeStat('away', 'score', 1)">+ GOAL</button>
+                    <button class="btn-away" onclick="changeStat('away', 'score', -1)">−</button>
+                </div>
+            </div>
+            
+            <!-- Shots on Goal -->
+            <div class="stat-row">
+                <div class="button-group">
+                    <button class="btn-home" onclick="changeStat('home', 'shots', 1)">+</button>
+                    <button class="btn-home" onclick="changeStat('home', 'shots', -1)">−</button>
+                </div>
+                <div class="stat-label">
+                    Shots on Goal<br>
+                    <span class="stat-value home" id="homeShots">0</span> - 
+                    <span class="stat-value away" id="awayShots">0</span>
+                </div>
+                <div class="button-group">
+                    <button class="btn-away" onclick="changeStat('away', 'shots', 1)">+</button>
+                    <button class="btn-away" onclick="changeStat('away', 'shots', -1)">−</button>
+                </div>
+            </div>
+            
+            <!-- Saves -->
+            <div class="stat-row">
+                <div class="button-group">
+                    <button class="btn-home" onclick="changeStat('home', 'saves', 1)">+</button>
+                    <button class="btn-home" onclick="changeStat('home', 'saves', -1)">−</button>
+                </div>
+                <div class="stat-label">
+                    Saves<br>
+                    <span class="stat-value home" id="homeSaves">0</span> - 
+                    <span class="stat-value away" id="awaySaves">0</span>
+                </div>
+                <div class="button-group">
+                    <button class="btn-away" onclick="changeStat('away', 'saves', 1)">+</button>
+                    <button class="btn-away" onclick="changeStat('away', 'saves', -1)">−</button>
+                </div>
+            </div>
+            
+            <!-- Penalties -->
+            <div class="stat-row">
+                <div class="button-group">
+                    <button class="btn-home" onclick="changeStat('home', 'penalties', 1)">+</button>
+                    <button class="btn-home" onclick="changeStat('home', 'penalties', -1)">−</button>
+                </div>
+                <div class="stat-label">
+                    Penalties<br>
+                    <span class="stat-value home" id="homePenalties">0</span> - 
+                    <span class="stat-value away" id="awayPenalties">0</span>
+                </div>
+                <div class="button-group">
+                    <button class="btn-away" onclick="changeStat('away', 'penalties', 1)">+</button>
+                    <button class="btn-away" onclick="changeStat('away', 'penalties', -1)">−</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn-control" onclick="nextPeriod()">Next Period</button>
+            <button class="btn-control btn-reset" onclick="resetGame()">Reset Game</button>
+        </div>
+    </div>
+
+    <!-- Color Picker Modal -->
+    <div class="color-modal" id="colorModal">
+        <div class="color-picker-content">
+            <div class="color-picker-title">Choose Team Color</div>
+            <div class="color-grid" id="colorGrid"></div>
+            <button class="close-modal" onclick="closeColorPicker()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let gameData = {
+            period: 1,
+            home: { score: 0, shots: 0, saves: 0, penalties: 0, color: '#2a5298' },
+            away: { score: 0, shots: 0, saves: 0, penalties: 0, color: '#c62828' }
+        };
+
+        // Wake Lock implementation
+        let wakeLock = null;
+        let wakeLockEnabled = false;
+
+        async function requestWakeLock() {
+            if (!('wakeLock' in navigator)) {
+                console.log('Wake Lock API not supported');
+                return;
+            }
+
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                wakeLockEnabled = true;
+                console.log('Wake Lock activated - screen will stay on');
+
+                wakeLock.addEventListener('release', () => {
+                    console.log('Wake Lock released');
+                    wakeLock = null;
+                });
+
+            } catch (err) {
+                console.error(`Wake Lock error: ${err.name}, ${err.message}`);
+            }
+        }
+
+        async function releaseWakeLock() {
+            if (wakeLock !== null) {
+                await wakeLock.release();
+                wakeLock = null;
+                wakeLockEnabled = false;
+                console.log('Wake Lock deactivated');
+            }
+        }
+
+        // Auto-reacquire wake lock when returning to page
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState === 'visible' && wakeLockEnabled && wakeLock === null) {
+                await requestWakeLock();
+            }
+        });
+
+        // Automatically request wake lock on first user interaction
+        let wakeLockRequested = false;
+        document.addEventListener('click', async () => {
+            if (!wakeLockRequested) {
+                wakeLockRequested = true;
+                await requestWakeLock();
+            }
+        }, { once: true });
+
+        // Standard youth hockey jersey colors
+        const jerseyColors = [
+            { name: 'Royal Blue', color: '#2a5298' },
+            { name: 'Red', color: '#c62828' },
+            { name: 'Navy Blue', color: '#1a237e' },
+            { name: 'Green', color: '#2e7d32' },
+            { name: 'Black', color: '#212121' },
+            { name: 'Purple', color: '#6a1b9a' },
+            { name: 'Orange', color: '#ef6c00' },
+            { name: 'Yellow', color: '#f9a825' },
+            { name: 'Light Blue', color: '#0288d1' },
+            { name: 'White', color: '#ffffff' },
+            { name: 'Teal', color: '#00897b' },
+            { name: 'Gray', color: '#616161' }
+        ];
+
+        let selectedTeam = null;
+        let longPressTimer = null;
+
+        // Setup long press listeners
+        function setupLongPress() {
+            const homeTeamName = document.querySelector('.team-name.home');
+            const awayTeamName = document.querySelector('.team-name.away');
+
+            [homeTeamName, awayTeamName].forEach(element => {
+                element.addEventListener('mousedown', startLongPress);
+                element.addEventListener('touchstart', startLongPress);
+                element.addEventListener('mouseup', cancelLongPress);
+                element.addEventListener('mouseleave', cancelLongPress);
+                element.addEventListener('touchend', cancelLongPress);
+                element.addEventListener('touchcancel', cancelLongPress);
+            });
+        }
+
+        function startLongPress(e) {
+            const element = e.currentTarget;
+            selectedTeam = element.classList.contains('home') ? 'home' : 'away';
+            
+            longPressTimer = setTimeout(() => {
+                openColorPicker();
+            }, 500); // 500ms long press
+        }
+
+        function cancelLongPress() {
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+        }
+
+        function openColorPicker() {
+            const colorGrid = document.getElementById('colorGrid');
+            const modal = document.getElementById('colorModal');
+            
+            colorGrid.innerHTML = '';
+            jerseyColors.forEach(jersey => {
+                const colorDiv = document.createElement('div');
+                colorDiv.className = 'color-option';
+                colorDiv.style.backgroundColor = jersey.color;
+                colorDiv.title = jersey.name;
+                colorDiv.onclick = () => setTeamColor(jersey.color);
+                colorGrid.appendChild(colorDiv);
+            });
+            
+            modal.classList.add('active');
+        }
+
+        function closeColorPicker() {
+            document.getElementById('colorModal').classList.remove('active');
+            selectedTeam = null;
+        }
+
+        function setTeamColor(color) {
+            if (selectedTeam) {
+                gameData[selectedTeam].color = color;
+                updateDisplay();
+                closeColorPicker();
+            }
+        }
+
+        function changeStat(team, stat, change) {
+            gameData[team][stat] = Math.max(0, gameData[team][stat] + change);
+            updateDisplay();
+        }
+
+        function nextPeriod() {
+            if (gameData.period < 3) {
+                gameData.period++;
+                updateDisplay();
+            } else {
+                alert('Game Over! Final Score:\nHome: ' + gameData.home.score + ' - Away: ' + gameData.away.score);
+            }
+        }
+
+        function resetGame() {
+            if (confirm('Are you sure you want to reset the game?')) {
+                const homeColor = gameData.home.color;
+                const awayColor = gameData.away.color;
+                
+                gameData = {
+                    period: 1,
+                    home: { score: 0, shots: 0, saves: 0, penalties: 0, color: homeColor },
+                    away: { score: 0, shots: 0, saves: 0, penalties: 0, color: awayColor }
+                };
+                updateDisplay();
+                
+                // Keep wake lock active through reset
+                console.log('Game reset, wake lock maintained');
+            }
+        }
+
+        function updateDisplay() {
+            document.getElementById('period').textContent = gameData.period;
+            
+            // Update home team
+            document.getElementById('homeScore').textContent = gameData.home.score;
+            document.getElementById('homeShots').textContent = gameData.home.shots;
+            document.getElementById('homeSaves').textContent = gameData.home.saves;
+            document.getElementById('homePenalties').textContent = gameData.home.penalties;
+            
+            // Update away team
+            document.getElementById('awayScore').textContent = gameData.away.score;
+            document.getElementById('awayShots').textContent = gameData.away.shots;
+            document.getElementById('awaySaves').textContent = gameData.away.saves;
+            document.getElementById('awayPenalties').textContent = gameData.away.penalties;
+            
+            // Update colors
+            const homeTeamName = document.querySelector('.team-name.home');
+            const awayTeamName = document.querySelector('.team-name.away');
+            
+            // For white, use black text. Otherwise use the team color
+            homeTeamName.style.color = gameData.home.color === '#ffffff' ? '#333' : gameData.home.color;
+            awayTeamName.style.color = gameData.away.color === '#ffffff' ? '#333' : gameData.away.color;
+            
+            document.querySelectorAll('.stat-value.home').forEach(el => {
+                el.style.color = gameData.home.color === '#ffffff' ? '#333' : gameData.home.color;
+            });
+            document.querySelectorAll('.stat-value.away').forEach(el => {
+                el.style.color = gameData.away.color === '#ffffff' ? '#333' : gameData.away.color;
+            });
+            
+            document.querySelectorAll('.btn-home').forEach(btn => {
+                btn.style.backgroundColor = gameData.home.color;
+                if (gameData.home.color === '#ffffff') {
+                    btn.style.color = '#333';
+                    btn.style.border = '2px solid #ccc';
+                } else {
+                    btn.style.color = 'white';
+                    btn.style.border = 'none';
+                }
+            });
+            document.querySelectorAll('.btn-away').forEach(btn => {
+                btn.style.backgroundColor = gameData.away.color;
+                if (gameData.away.color === '#ffffff') {
+                    btn.style.color = '#333';
+                    btn.style.border = '2px solid #ccc';
+                } else {
+                    btn.style.color = 'white';
+                    btn.style.border = 'none';
+                }
+            });
+        }
+
+        // Initialize
+        setupLongPress();
+        updateDisplay();
+    </script>
+</body>
+</html>
