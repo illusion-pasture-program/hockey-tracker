@@ -531,6 +531,19 @@
 
         function changeStat(team, stat, change) {
             gameData[team][stat] = Math.max(0, gameData[team][stat] + change);
+
+            // Auto-increment shots on goal for logical events
+            if (change > 0) {
+                if (stat === 'saves') {
+                    // When a goalie makes a save, increment shots for the opposing team
+                    const opposingTeam = team === 'home' ? 'away' : 'home';
+                    gameData[opposingTeam].shots = gameData[opposingTeam].shots + 1;
+                } else if (stat === 'score') {
+                    // When a team scores a goal, increment their own shots
+                    gameData[team].shots = gameData[team].shots + 1;
+                }
+            }
+
             updateDisplay();
         }
 
