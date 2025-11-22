@@ -378,7 +378,7 @@
     </div>
 
     <script>
-        // --- 1. THE EXACT WAKE LOCK CODE FROM ORIGINAL ---
+        // --- 1. THE EXACT WAKE LOCK CODE (With the fix for touch events) ---
         let wakeLock = null;
         let wakeLockEnabled = false;
 
@@ -419,14 +419,22 @@
             }
         });
 
-        // Automatically request wake lock on first user interaction
+        // FIX: Handle both click and touchstart to trigger Wake Lock
+        // This ensures it works even if e.preventDefault() stops the click event
         let wakeLockRequested = false;
-        document.addEventListener('click', async () => {
+        
+        async function triggerWakeLock() {
             if (!wakeLockRequested) {
                 wakeLockRequested = true;
                 await requestWakeLock();
+                // Cleanup listeners once triggered
+                document.removeEventListener('click', triggerWakeLock);
+                document.removeEventListener('touchstart', triggerWakeLock);
             }
-        }, { once: true });
+        }
+
+        document.addEventListener('click', triggerWakeLock);
+        document.addEventListener('touchstart', triggerWakeLock);
 
 
         // --- 2. GAME LOGIC ---
