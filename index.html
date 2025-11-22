@@ -190,14 +190,40 @@
             border-radius: 15px;
             padding: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative; /* For absolute positioning of reset btn */
+        }
+
+        /* New Header Layout for Modal */
+        .modal-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+            min-height: 32px;
         }
 
         .modal-title {
             font-size: 1.3em;
             font-weight: bold;
-            margin-bottom: 20px;
             color: #333;
             text-align: center;
+        }
+
+        /* Small Reset Button in top left */
+        .reset-btn-small {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ffcdd2; /* Light red */
+            color: #b71c1c; /* Dark red text */
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
         }
 
         .control-section {
@@ -260,25 +286,13 @@
             background: #666;
             color: white;
             border: none;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 15px;
+            border-radius: 10px;
             font-size: 1.1rem;
             width: 100%;
             font-weight: bold;
             cursor: pointer;
-        }
-
-        .reset-btn {
-            background: #c62828;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            width: 100%;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 20px;
+            margin-top: 10px;
         }
 
         /* Toast for Long Press hint */
@@ -352,7 +366,12 @@
     <!-- Settings Modal (Shared for Home/Away) -->
     <div class="modal-overlay" id="settingsModal">
         <div class="modal-content">
-            <div class="modal-title" id="modalTitle">Team Settings</div>
+            
+            <!-- Header with Title and Small Reset Button -->
+            <div class="modal-header">
+                <button class="reset-btn-small" onclick="resetGame()">Reset</button>
+                <div class="modal-title" id="modalTitle">Settings</div>
+            </div>
             
             <!-- Penalties -->
             <div class="control-section">
@@ -373,7 +392,6 @@
             </div>
 
             <button class="close-btn" onclick="closeModal()">Close</button>
-            <button class="reset-btn" onclick="resetGame()">Reset Game</button>
         </div>
     </div>
 
